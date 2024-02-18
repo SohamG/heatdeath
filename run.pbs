@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N op_star
+#PBS -l nodes=1:ppn=64
+#PBS -m bea
+#PBS -M sgumas2@uic.edu
+#PBS -q debug
+#PBS -l walltime=00:30:00
+#PBS -o main.out
+#PBS -e main.err
+
+cd $PBS_O_WORKDIR
+
+echo "DIR: $PWD"
+
+echo "CONTENTS: $(ls -l)"
+
+# Determine the maximum number of threads based on the number of processors
+MAX_THREADS=$(nproc)
+
+echo "THREADs: ${MAX_THREADS}"
+
+./main 5 5
+
