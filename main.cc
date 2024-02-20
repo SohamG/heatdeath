@@ -2,7 +2,10 @@
 #include <iostream>
 #include <omp.h>
 #include <sstream>
-
+#include <atomic>
+#include <csignal>
+#include <thread>
+#include <future>
 /*
  * 1 * n = n + 1
  * m * 1 = (m-1) * 2
@@ -11,24 +14,27 @@
 
 using std::cout, std::endl;
 
-static int count = 0;
+static std::atomic_uint count{0};
 
 auto op_star(const int m, const int n) -> int {
 
-#pragma omp atomic update
   count++;
 
-  cout << count << " op_star m = " << m << " n = " << n << "\n";
+  // cout << count << " op_star m = " << m << " n = " << n << "\n";
 
   if (m == 1) {
     return n + 1;
   }
   if (n == 1) {
-    return op_star(m-1, 2);
+    return std::async(op_star, m-1, n).get();
   }
     
-  return op_star(m - 1, op_star(m, n - 1));
+  return std::async(op_star, m - 1, op_star(m, n - 1)).get();
   
+}
+
+void handler(int s) {
+  cout << "Iteration count is " << count << endl;
 }
 
 int main(int ac, char ** __restrict__ av) {
@@ -40,9 +46,10 @@ int main(int ac, char ** __restrict__ av) {
 
   cout << "A,B: " << a << " " << b << endl;
 
+  std::signal(SIGUSR1, handler);
+
   int result = 0;
-#pragma omp parralel
-#pragma omp single
+
   result = op_star(a, b);
 
   cout << result << endl;
