@@ -6,6 +6,7 @@
 #include <csignal>
 #include <thread>
 #include <future>
+
 /*
  * 1 * n = n + 1
  * m * 1 = (m-1) * 2
